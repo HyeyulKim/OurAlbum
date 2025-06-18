@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.ouralbum.presentation.component.AppDivider
+import com.example.ouralbum.presentation.component.AppTopBar
 import com.example.ouralbum.presentation.component.PhotoCard
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,23 +23,9 @@ fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
 
     Scaffold(
         topBar = {
-            Column {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Text(
-                            text = "Our Album",
-                            style = MaterialTheme.typography.displaySmall,
-                            maxLines = 1
-                        )
-                    },
-                    modifier = Modifier.height(48.dp),
-                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background
-                    )
-                )
-                AppDivider()
-            }
-
+            AppTopBar(
+                title = "My Album"
+            )
         }
     ) { paddingValues ->
         if (isLoggedIn) {

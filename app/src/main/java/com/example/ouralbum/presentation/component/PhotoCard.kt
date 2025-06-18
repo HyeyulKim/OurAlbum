@@ -12,41 +12,46 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.ouralbum.domain.model.Photo
 import com.example.ouralbum.ui.theme.bodyLargeBold
+import com.example.ouralbum.ui.util.Dimension
 
 @Composable
 fun PhotoCard(
     photo: Photo,
     onBookmarkClick: () -> Unit
 ) {
+    val fontSizeTitle = Dimension.scaledFont(0.02f)     // 제목 글씨 크기
+    val fontSizeDate = Dimension.scaledFont(0.018f)     // 날짜 글씨 크기
+    val iconSize = Dimension.scaledWidth(0.06f)         // 아이콘 크기 (화면 너비 기준)
+    val paddingHorizontal = Dimension.paddingSmall()
+    val paddingVertical = Dimension.scaledHeight(0.01f)
+
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(horizontal = paddingHorizontal, vertical = paddingVertical),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = photo.title,
-                style = MaterialTheme.typography.bodyLargeBold,
+                style = MaterialTheme.typography.bodyLargeBold.copy(fontSize = fontSizeTitle),
                 modifier = Modifier.weight(1f)
             )
 
             Text(
                 text = photo.date,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(end = 8.dp)
+                style = MaterialTheme.typography.bodyLarge.copy(fontSize = fontSizeDate),
+                modifier = Modifier.padding(end = paddingHorizontal)
             )
 
             IconButton(
                 onClick = onBookmarkClick,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(iconSize)
             ) {
                 Icon(
                     imageVector = if (photo.isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
@@ -61,7 +66,7 @@ fun PhotoCard(
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(1f)
+                .aspectRatio(1f) // 정사각형 비율 유지
         )
     }
 }
