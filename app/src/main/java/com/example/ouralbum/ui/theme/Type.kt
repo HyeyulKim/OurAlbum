@@ -17,6 +17,10 @@ val BodyFont = FontFamily(
     Font(R.font.pretendard_extralight, FontWeight.Normal)
 )
 
+val BodyFontBold = FontFamily(
+    Font(R.font.pretendard_bold, FontWeight.Normal)
+)
+
 // Typography 정의
 val OurTypography = Typography(
     displaySmall = TextStyle(
@@ -41,3 +45,5 @@ val OurTypography = Typography(
         fontSize = 12.sp
     )
 )
+val Typography.bodyLargeBold: TextStyle
+    get() = this.bodyLarge.copy(fontFamily = BodyFontBold)
