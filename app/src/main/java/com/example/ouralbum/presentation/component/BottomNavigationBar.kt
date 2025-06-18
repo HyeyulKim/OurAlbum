@@ -14,10 +14,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.ouralbum.presentation.navigation.NavigationItem
+import com.example.ouralbum.ui.util.Dimension
 
 @Composable
 fun CustomBottomNavigationBar(
@@ -32,13 +31,18 @@ fun CustomBottomNavigationBar(
         NavigationItem.MyPage
     )
 
+    val navBarHeight = Dimension.scaledHeight(0.06f) // 예: 화면 높이의 7%
+    val iconSize = Dimension.scaledWidth(0.07f) // 예: 화면 너비의 7%
+    val paddingVertical = Dimension.scaledHeight(0.01f)
+    val paddingHorizontal = Dimension.scaledWidth(0.02f)
+
     Column {
         AppDivider()
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp)
-                .background(Color.White),
+                .height(navBarHeight)
+                .background(MaterialTheme.colorScheme.background),
             horizontalArrangement = Arrangement.SpaceAround,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -61,14 +65,14 @@ fun CustomBottomNavigationBar(
                                 }
                             }
                         }
-                        .padding(vertical = 2.dp, horizontal = 6.dp),
+                        .padding(vertical = paddingVertical, horizontal = paddingHorizontal),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.label,
                         tint = if (selected) Color.Black else Color.Gray,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(iconSize)
                     )
                 }
             }
