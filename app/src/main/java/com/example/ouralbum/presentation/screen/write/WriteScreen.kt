@@ -99,9 +99,7 @@ fun WriteScreen(viewModel: WriteViewModel = hiltViewModel()) {
                 allPeople = listOf("김철수", "최영희", "강진영", "이지윤", "박영철"),
                 selectedPeople = uiState.selectedPeople,
                 onSelectionChange = { viewModel.onSelectedPeopleChange(it) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(tagSelectorHeight)
+                modifier = Modifier.fillMaxWidth()
             )
 
             // 이미지 업로드 영역
