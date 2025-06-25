@@ -29,7 +29,7 @@ fun TagPeopleSelector(
 
     val spacingSmall = Dimension.scaledWidth(0.02f)
     val spacingTiny = Dimension.scaledWidth(0.01f)
-    val textFontSize = Dimension.scaledFont(0.018f)
+    val contentFontSize = Dimension.scaledFont(0.02f)
     val chipFontSize = Dimension.scaledFont(0.016f)
 
     Column(
@@ -41,9 +41,9 @@ fun TagPeopleSelector(
             value = query,
             onValueChange = { query = it },
             placeholder = {
-                Text("함께한 사람을 검색하세요", fontSize = textFontSize)
+                Text("함께한 사람을 검색하세요", fontSize = contentFontSize)
             },
-            textStyle = LocalTextStyle.current.copy(fontSize = textFontSize),
+            textStyle = LocalTextStyle.current.copy(fontSize = contentFontSize),
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )

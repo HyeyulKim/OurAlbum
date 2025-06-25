@@ -3,6 +3,7 @@ package com.example.ouralbum.presentation.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Divider
@@ -30,6 +31,7 @@ fun CustomBottomNavigationBar(
         NavigationItem.Bookmark,
         NavigationItem.MyPage
     )
+    val isDarkTheme = isSystemInDarkTheme()
 
     val navBarHeight = Dimension.scaledHeight(0.06f) // 예: 화면 높이의 7%
     val iconSize = Dimension.scaledWidth(0.07f) // 예: 화면 너비의 7%
@@ -48,7 +50,11 @@ fun CustomBottomNavigationBar(
         ) {
             items.forEach { item ->
                 val selected = currentRoute == item.route
-
+                val iconTint = when {
+                    selected && isDarkTheme -> Color.White
+                    selected && !isDarkTheme -> Color.Black
+                    else -> Color.Gray
+                }
                 Box(
                     modifier = Modifier
                         .clickable(
@@ -71,7 +77,7 @@ fun CustomBottomNavigationBar(
                     Icon(
                         imageVector = item.icon,
                         contentDescription = item.label,
-                        tint = if (selected) Color.Black else Color.Gray,
+                        tint = iconTint,
                         modifier = Modifier.size(iconSize)
                     )
                 }

@@ -25,7 +25,6 @@ fun WriteScreen(viewModel: WriteViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
 
     val sectionSpacing = Dimension.scaledHeight(0.015f)
-    val contentHeight = Dimension.scaledHeight(0.07f)
     val tagSelectorHeight = Dimension.scaledHeight(0.20f)
     val bottomBarHeight = Dimension.scaledHeight(0.1f)
 
@@ -75,10 +74,8 @@ fun WriteScreen(viewModel: WriteViewModel = hiltViewModel()) {
             OutlinedTextField(
                 value = uiState.title,
                 onValueChange = { viewModel.onTitleChange(it) },
-                placeholder = { Text("제목을 적어주세요") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(contentHeight),
+                placeholder = { Text("제목을 적어주세요", fontSize = contentFontSize) },
+                modifier = Modifier.fillMaxWidth(),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     fontSize = contentFontSize
                 ),
@@ -89,10 +86,8 @@ fun WriteScreen(viewModel: WriteViewModel = hiltViewModel()) {
             OutlinedTextField(
                 value = uiState.content,
                 onValueChange = { viewModel.onContentChange(it) },
-                placeholder = { Text("사진 속 함께 했던 추억을 적어주세요.") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(contentHeight),
+                placeholder = { Text("사진 속 함께 했던 추억을 적어주세요.", fontSize = contentFontSize) },
+                modifier = Modifier.fillMaxWidth(),
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     fontSize = contentFontSize
                 ),
