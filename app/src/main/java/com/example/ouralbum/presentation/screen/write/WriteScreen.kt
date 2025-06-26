@@ -14,12 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.ouralbum.presentation.component.AppDivider
 import com.example.ouralbum.presentation.component.AppTopBar
 import com.example.ouralbum.presentation.component.TagPeopleSelector
 import com.example.ouralbum.ui.util.Dimension
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WriteScreen(viewModel: WriteViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()

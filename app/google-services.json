@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "877468506064",
+    "project_id": "ouralbum-de485",
+    "storage_bucket": "ouralbum-de485.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:877468506064:android:113cae3e8569044188cbd5",
+        "android_client_info": {
+          "package_name": "com.example.ouralbum"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDndXH0HWh7HejYUUh67zVP6HF4mPzlAyc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

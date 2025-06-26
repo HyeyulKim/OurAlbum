@@ -9,13 +9,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.ouralbum.presentation.component.AppDivider
 import com.example.ouralbum.presentation.component.AppTopBar
 import com.example.ouralbum.presentation.component.PhotoCard
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GalleryScreen(viewModel: GalleryViewModel = hiltViewModel()) {
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
