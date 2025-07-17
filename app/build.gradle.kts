@@ -54,6 +54,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview:1.6.6")
     implementation("androidx.compose.material:material-icons-extended:1.6.6")
     debugImplementation("androidx.compose.ui:ui-tooling:1.6.6")
+    implementation("io.coil-kt:coil-compose:2.4.0")
 
     // ViewModel + Hilt
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
@@ -74,11 +75,14 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    // Firebase BoM
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.3"))
-
-    // Firebase Auth
     implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+
+    // Google Sign-In
+    implementation("com.google.android.gms:play-services-auth:20.5.0")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
