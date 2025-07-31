@@ -19,6 +19,7 @@ import com.google.android.gms.common.api.ApiException
 import androidx.navigation.NavController
 import com.example.ouralbum.presentation.navigation.NavigationItem
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import kotlinx.coroutines.delay
 
 @Composable
 fun LoginScreen(
@@ -59,6 +60,9 @@ fun LoginScreen(
             is LoginViewModel.LoginState.Success -> {
                 val userInfo = (loginState as LoginViewModel.LoginState.Success).userInfo
                 Toast.makeText(context, "로그인 성공!", Toast.LENGTH_SHORT).show()
+                // Firebase 토큰 전파를 위한 대기 시간 (200~500ms)
+                delay(500)
+
                 onLoginSuccess(userInfo) // isLoggedIn = true 로 반영, 사용자 정보 전달
                 navController.navigate(NavigationItem.MyPage.route) {
                     popUpTo("login") { inclusive = true }

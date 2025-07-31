@@ -1,7 +1,10 @@
 package com.example.ouralbum.presentation.screen.write
 
+import android.net.Uri
+
 data class WriteUiState(
     val title: String = "",
     val content: String = "",
-    val selectedPeople: List<String> = listOf("김철수", "최영희", "강진영")
+    val selectedPeople: List<String> = emptyList(),
+    val imageUri: Uri? = null
 )

@@ -1,5 +1,6 @@
 package com.example.ouralbum.data.repository
 
+import android.util.Log
 import com.example.ouralbum.domain.repository.AuthRepository
 import com.example.ouralbum.presentation.screen.login.LoginViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -15,6 +16,8 @@ class FirebaseAuthRepository @Inject constructor(
 
     override fun signInWithGoogle(idToken: String): Flow<LoginViewModel.LoginResult> = flow {
         try {
+            Log.d("FirebaseAuthRepo", "Attempting sign-in with Google ID token")
+
             // 자격 증명 생성
             val credential = GoogleAuthProvider.getCredential(idToken, null)
 
@@ -23,6 +26,8 @@ class FirebaseAuthRepository @Inject constructor(
             val user = authResult.user
 
             if (user != null) {
+                Log.d("FirebaseAuthRepo", "Firebase sign-in success: uid=${user.uid}, email=${user.email}")
+
                 val userInfo = LoginViewModel.UserInfo(
                     id = user.uid,
                     email = user.email ?: "",
@@ -30,9 +35,13 @@ class FirebaseAuthRepository @Inject constructor(
                 )
                 emit(LoginViewModel.LoginResult.Success(userInfo))
             } else {
+                Log.e("FirebaseAuthRepo", "signInWithCredential succeeded but user is null")
+
                 emit(LoginViewModel.LoginResult.Failure("사용자 정보를 불러올 수 없습니다."))
             }
         } catch (e: Exception) {
+            Log.e("FirebaseAuthRepo", "Firebase sign-in failed", e)
+
             emit(LoginViewModel.LoginResult.Failure(e.message ?: "로그인 실패"))
         }
     }
