@@ -80,6 +80,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-appcheck-debug:17.1.1")
 
     // Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.5.0")
