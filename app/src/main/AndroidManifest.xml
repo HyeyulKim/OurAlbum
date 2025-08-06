@@ -17,15 +17,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.OurAlbum">
 
-        <!-- 앱 시작 지점 -->
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.splash.SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.OurAlbum">
+            android:theme="@style/Theme.OurAlbum.Transparent">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <!-- 일반 액티비티 -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.OurAlbum">
         </activity>
 
     </application>

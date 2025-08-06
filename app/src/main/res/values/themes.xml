@@ -1,3 +1,12 @@
 <resources>
     <style name="Theme.OurAlbum" parent="android:Theme.Material.Light.NoActionBar"/>
+
+    <style name="Theme.OurAlbum.Transparent" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">false</item>
+    </style>
+
 </resources>
