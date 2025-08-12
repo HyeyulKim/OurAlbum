@@ -96,7 +96,7 @@ fun LoginScreen(
         when (loginState) {
             is LoginViewModel.LoginState.Loading -> Text("로그인 중...")
             is LoginViewModel.LoginState.Failure -> Text(
-                text = (loginState as LoginViewModel.LoginState.Failure).message ?: "알 수 없는 오류 발생",
+                text = (loginState as LoginViewModel.LoginState.Failure).message ?: "로그인 실패",
                 color = MaterialTheme.colorScheme.error
             )
             else -> {}
