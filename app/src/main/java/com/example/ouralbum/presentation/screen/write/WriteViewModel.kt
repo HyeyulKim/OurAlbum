@@ -30,16 +30,14 @@ class WriteViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(content = newContent)
     }
 
-    fun onSelectedPeopleChange(newList: List<String>) {
-        _uiState.value = _uiState.value.copy(selectedPeople = newList)
-    }
-
     fun onImageSelected(uri: Uri?) {
         _uiState.value = _uiState.value.copy(imageUri = uri) 
     }
 
 
     fun submitWrite() {
+        if (_uploadState.value == UploadState.Loading) return // 중복 방지
+
         val title = _uiState.value.title
         val imageUri = _uiState.value.imageUri
 
@@ -75,6 +73,10 @@ class WriteViewModel @Inject constructor(
 
     fun resetForm() {
         _uiState.value = WriteUiState()
+        _uploadState.value = UploadState.Idle
+    }
+
+    fun setUploadIdle() {
         _uploadState.value = UploadState.Idle
     }
 

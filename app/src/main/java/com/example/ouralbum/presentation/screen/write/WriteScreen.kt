@@ -21,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.ouralbum.presentation.component.AppTopBar
-import com.example.ouralbum.presentation.component.TagPeopleSelector
 import com.example.ouralbum.ui.util.Dimension
 
 @Composable
@@ -55,11 +54,12 @@ fun WriteScreen(
         when (uploadState) {
             is WriteViewModel.UploadState.Success -> {
                 snackbarHostState.showSnackbar("업로드 완료!")
-                viewModel.resetForm()
+                viewModel.resetForm() // uploadState = Idle
             }
             is WriteViewModel.UploadState.Failure -> {
                 val msg = (uploadState as WriteViewModel.UploadState.Failure).message
                 snackbarHostState.showSnackbar("업로드 실패: $msg")
+                viewModel.setUploadIdle() // 실패 후에도 다시 버튼 누를 수 있도록
             }
             else -> Unit
         }
@@ -76,15 +76,26 @@ fun WriteScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(bottomBarHeight)
-                    .padding(vertical = sectionSpacing,horizontal = horizontalPadding),
+                    .padding(vertical = sectionSpacing, horizontal = horizontalPadding),
                 contentAlignment = Alignment.Center
             ) {
                 Button(
                     onClick = { viewModel.submitWrite() },
-                    modifier = Modifier.fillMaxWidth().fillMaxHeight(),
-                    shape = RoundedCornerShape(8.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(),
+                    shape = RoundedCornerShape(8.dp),
+                    enabled = uploadState is WriteViewModel.UploadState.Idle
                 ) {
-                    Text("게시하기", fontSize = buttonFontSize)
+                    if (uploadState is WriteViewModel.UploadState.Loading){
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                    }else {
+                        Text("게시하기", fontSize = buttonFontSize)
+                    }
                 }
             }
         }
@@ -121,14 +132,6 @@ fun WriteScreen(
                 textStyle = MaterialTheme.typography.bodyLarge.copy(fontSize = contentFontSize),
                 singleLine = false,
                 maxLines = 5
-            )
-
-            // 함께한 사람 선택창
-            TagPeopleSelector(
-                allPeople = listOf("김철수", "최영희", "강진영", "이지윤", "박영철"),
-                selectedPeople = uiState.selectedPeople,
-                onSelectionChange = { viewModel.onSelectedPeopleChange(it) },
-                modifier = Modifier.fillMaxWidth()
             )
 
             // 이미지 업로드 영역
