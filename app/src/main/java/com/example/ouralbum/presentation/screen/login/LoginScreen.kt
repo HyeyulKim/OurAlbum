@@ -17,6 +17,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import androidx.navigation.NavController
+import com.example.ouralbum.R
 import com.example.ouralbum.presentation.navigation.NavigationItem
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import kotlinx.coroutines.delay
@@ -32,7 +33,7 @@ fun LoginScreen(
 
     val gso = remember {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken("1066547476680-q7rf2iqau311lgvvtk8v3gcpihqueb2s.apps.googleusercontent.com") // Web Client ID
+            .requestIdToken(context.getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
     }
