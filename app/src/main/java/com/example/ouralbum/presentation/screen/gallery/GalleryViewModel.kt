@@ -2,11 +2,10 @@ package com.example.ouralbum.presentation.screen.gallery
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.ouralbum.domain.auth.AuthStateProvider
 import com.example.ouralbum.domain.usecase.GetUserPhotosUseCase
 import com.example.ouralbum.domain.usecase.ToggleBookmarkUseCase
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -15,27 +14,11 @@ import javax.inject.Inject
 class GalleryViewModel @Inject constructor(
     private val getUserPhotosUseCase: GetUserPhotosUseCase,
     private val toggleBookmarkUseCase: ToggleBookmarkUseCase,
-    private val auth: FirebaseAuth
-) : ViewModel() {
+    authStateProvider: AuthStateProvider
+    ) : ViewModel() {
 
-    // FirebaseAuth 상태를 Flow로 래핑
-    private val authStateFlow: Flow<Boolean> = callbackFlow {
-        val listener = FirebaseAuth.AuthStateListener { firebaseAuth ->
-            trySend(firebaseAuth.currentUser != null)
-        }
-        auth.addAuthStateListener(listener)
-        // 초기값도 즉시 전파
-        trySend(auth.currentUser != null)
-        awaitClose { auth.removeAuthStateListener(listener) }
-    }
-
-    // 화면에서 바로 구독 가능한 StateFlow<Boolean>
-    val isLoggedIn: StateFlow<Boolean> = authStateFlow
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = false
-        )
+    val isLoggedIn: StateFlow<Boolean> = authStateProvider.isLoggedIn
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     // 갤러리 UI 상태
     private val _uiState = MutableStateFlow(GalleryUiState())
@@ -55,7 +38,7 @@ class GalleryViewModel @Inject constructor(
         }
     }
 
-    // 중복 로딩 방지 (옵션)
+    // 중복 로딩 방지
     private var isLoadingPhotos = false
 
     private fun loadUserPhotos() {

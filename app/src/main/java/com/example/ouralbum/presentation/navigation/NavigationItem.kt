@@ -11,7 +11,7 @@ sealed class NavigationItem(
     val icon: ImageVector
 ) {
     object Home : NavigationItem("home", "", Icons.Filled.Home)
-    object Gallery : NavigationItem("album", "", Icons.Filled.Photo)
+    object Gallery : NavigationItem("gallery", "", Icons.Filled.Photo)
     object Write : NavigationItem("write", "", Icons.Filled.AddBox)
     object Bookmark : NavigationItem("bookmark", "", Icons.Filled.Bookmark)
     object MyPage : NavigationItem("mypage", "", Icons.Filled.Person)
