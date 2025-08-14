@@ -27,7 +27,7 @@ class MyPageViewModel @Inject constructor(
         loadUserInfo()
     }
 
-    private fun loadUserInfo() {
+    fun loadUserInfo() {
         viewModelScope.launch {
             val user: User? = getCurrentUserUseCase()
             if (user != null) {
@@ -38,6 +38,7 @@ class MyPageViewModel @Inject constructor(
                 )
             } else {
                 _isLoggedIn.value = false
+                _uiState.value = MyPageUiState()
             }
         }
     }

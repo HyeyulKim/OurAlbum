@@ -5,16 +5,22 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ouralbum.data.remote.PhotoUploader
+import com.example.ouralbum.domain.auth.AuthStateProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class WriteViewModel @Inject constructor(
-    private val photoUploader: PhotoUploader
+    private val photoUploader: PhotoUploader,
+    authStateProvider: AuthStateProvider
 ) : ViewModel() {
+    val isLoggedIn: StateFlow<Boolean> = authStateProvider.isLoggedIn
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
 
     private val _uiState = MutableStateFlow(WriteUiState())
     val uiState: StateFlow<WriteUiState> = _uiState
@@ -61,8 +67,6 @@ class WriteViewModel @Inject constructor(
             )
         }
     }
-
-
 
     sealed class UploadState {
         object Idle : UploadState()

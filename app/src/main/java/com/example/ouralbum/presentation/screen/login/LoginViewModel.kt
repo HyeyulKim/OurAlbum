@@ -1,7 +1,5 @@
 package com.example.ouralbum.presentation.screen.login
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ouralbum.domain.usecase.GoogleSignInUseCase
@@ -37,12 +35,12 @@ class LoginViewModel @Inject constructor(
                 .collect { result ->
                     when (result) {
                         is LoginResult.Success -> {
-                            _loginState.value = LoginState.Success(result.userInfo) // ✅ 수정됨
+                            _loginState.value = LoginState.Success(result.userInfo)
                             _userInfo.value = result.userInfo
                         }
 
                         is LoginResult.Failure -> {
-                            _loginState.value = LoginState.Failure(result.errorMessage) // ✅ 수정됨
+                            _loginState.value = LoginState.Failure(result.errorMessage)
                         }
                     }
                 }

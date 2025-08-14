@@ -12,14 +12,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ouralbum.presentation.component.AppTopBar
+import com.example.ouralbum.presentation.component.LoginRequiredView
 import com.example.ouralbum.presentation.component.PhotoCard
 import com.example.ouralbum.ui.util.Dimension
 
 @Composable
 fun BookmarkScreen(viewModel: BookmarkViewModel = hiltViewModel()) {
-    val isLoggedIn by viewModel.isLoggedIn.collectAsState()
-    val uiState by viewModel.uiState.collectAsState()
+    val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val spacingTiny = Dimension.scaledWidth(0.001f)
 
@@ -30,35 +32,32 @@ fun BookmarkScreen(viewModel: BookmarkViewModel = hiltViewModel()) {
             )
         }
     ) { paddingValues ->
-        if (isLoggedIn) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .fillMaxSize(),
-                contentPadding = PaddingValues(spacingTiny),
-                verticalArrangement = Arrangement.spacedBy(spacingTiny),
-                horizontalArrangement = Arrangement.spacedBy(spacingTiny)
-            ) {
-                items(uiState.bookmarkedPhotos) { photo ->
-                    PhotoCard(
-                        photo = photo,
-                        onBookmarkClick = { viewModel.onBookmarkClick(photo.id) }
-                    )
-                }
-            }
-        } else {
+        if (!isLoggedIn) {
             Box(
                 modifier = Modifier
+                    .padding(paddingValues)
                     .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "로그인이 필요합니다",
-                    style = MaterialTheme.typography.bodyLarge
+                LoginRequiredView()
+            }
+            return@Scaffold
+        }
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(spacingTiny),
+            verticalArrangement = Arrangement.spacedBy(spacingTiny),
+            horizontalArrangement = Arrangement.spacedBy(spacingTiny)
+        ) {
+            items(uiState.bookmarkedPhotos) { photo ->
+                PhotoCard(
+                    photo = photo,
+                    onBookmarkClick = { viewModel.onBookmarkClick(photo.id) }
                 )
             }
         }
+
     }
 }

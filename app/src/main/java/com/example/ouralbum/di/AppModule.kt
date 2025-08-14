@@ -5,8 +5,10 @@ import com.example.ouralbum.data.repository.PhotoRepositoryImpl
 import com.example.ouralbum.data.repository.UserRepositoryImpl
 import com.example.ouralbum.domain.repository.PhotoRepository
 import com.example.ouralbum.domain.repository.UserRepository
+import com.example.ouralbum.domain.usecase.GetBookmarkedPhotosUseCase
 import com.example.ouralbum.domain.usecase.GetCurrentUserUseCase
 import com.example.ouralbum.domain.usecase.GetPhotosUseCase
+import com.example.ouralbum.domain.usecase.GetUserPhotosUseCase
 import com.example.ouralbum.domain.usecase.LogoutUseCase
 import com.example.ouralbum.domain.usecase.ToggleBookmarkUseCase
 import com.google.firebase.auth.FirebaseAuth
@@ -52,9 +54,21 @@ object AppModule {
         firebaseAuth: FirebaseAuth
     ): PhotoRepository = PhotoRepositoryImpl(firestore, firebaseAuth)
 
+    // 전체 사진
     @Provides
     fun provideGetPhotosUseCase(repository: PhotoRepository): GetPhotosUseCase =
         GetPhotosUseCase(repository)
+
+    // 내 사진(현재 유저)
+    @Provides
+    fun provideGetUserPhotosUseCase(
+        repository: PhotoRepository
+    ): GetUserPhotosUseCase = GetUserPhotosUseCase(repository)
+
+    @Provides
+    fun provideGetBookmarkedPhotosUseCase(
+        repository: PhotoRepository
+    ): GetBookmarkedPhotosUseCase = GetBookmarkedPhotosUseCase(repository)
 
     @Provides
     fun provideToggleBookmarkUseCase(repository: PhotoRepository): ToggleBookmarkUseCase =
