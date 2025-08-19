@@ -14,6 +14,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.ouralbum.presentation.component.AppTopBar
+import com.example.ouralbum.presentation.component.EmptyView
+import com.example.ouralbum.presentation.component.ErrorView
 import com.example.ouralbum.presentation.component.LoginRequiredView
 import com.example.ouralbum.presentation.component.PhotoCard
 
@@ -48,7 +50,7 @@ fun GalleryScreen(
 
                 else -> {
                     if (uiState.photos.isEmpty()) {
-                        EmptyView()
+                        EmptyView("업로드된 게시물이 없습니다.")
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
@@ -65,36 +67,5 @@ fun GalleryScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun ErrorView(
-    message: String,
-    onRetry: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(message, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(12.dp))
-        Button(onClick = onRetry) { Text("다시 시도") }
-    }
-}
-
-@Composable
-private fun EmptyView() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("업로드된 사진이 없습니다.")
     }
 }
