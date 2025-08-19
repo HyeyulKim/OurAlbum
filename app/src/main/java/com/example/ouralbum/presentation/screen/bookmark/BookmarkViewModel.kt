@@ -69,10 +69,15 @@ class BookmarkViewModel @Inject constructor(
         }
     }
 
+    fun reload() {
+        // 로그인일 때만 재시도 허용
+        if (isLoggedIn.value) loadBookmarkedPhotos()
+    }
+
     fun onBookmarkClick(photoId: String) {
         viewModelScope.launch {
             toggleBookmarkUseCase(photoId)
-            if (isLoggedIn.value) loadBookmarkedPhotos()
+            reload() // 북마크 후 재로딩
         }
     }
 }

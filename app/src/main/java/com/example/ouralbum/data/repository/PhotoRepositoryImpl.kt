@@ -16,12 +16,12 @@ class PhotoRepositoryImpl @Inject constructor(
     private val firebaseAuth: FirebaseAuth
 ) : PhotoRepository {
 
-    /** 🔹 전체 사진 실시간 스트림 */
+    /** 전체 사진 실시간 스트림 */
     override fun getAllPhotos(): Flow<List<Photo>> = callbackFlow {
         val listener = firestore.collection("photos")
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    // 필요하다면 close(error) 로 흐름 종료
+                    close(error) // Flow를 실패 종료 → ViewModel의 catch로 떨어짐 → isLoading=false로 내려감
                     return@addSnapshotListener
                 }
                 val photos = snapshot?.documents
@@ -34,31 +34,49 @@ class PhotoRepositoryImpl @Inject constructor(
         awaitClose { listener.remove() }
     }
 
-    /** 🔹 현재 사용자 사진만 */
+    /** 현재 사용자 사진만 */
     override fun getPhotosByCurrentUser(): Flow<List<Photo>> = callbackFlow {
-        val uid = firebaseAuth.currentUser?.uid ?: return@callbackFlow
+        val uid = firebaseAuth.currentUser?.uid
+        if (uid == null) {
+            trySend(emptyList()) // 로그인 전에도 로딩 종료되게 빈 리스트 방출
+            close()
+            return@callbackFlow
+        }
         val listener = firestore.collection("photos")
             .whereEqualTo("userId", uid)
-            .addSnapshotListener { snapshot, _ ->
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error) // Flow를 실패 종료 → ViewModel의 catch로 떨어짐 → isLoading=false로 내려감
+                    return@addSnapshotListener
+                }
                 val photos = snapshot?.documents?.mapNotNull { it.toPhoto() } ?: emptyList()
                 trySend(photos)
             }
         awaitClose { listener.remove() }
     }
 
-    /** 🔹 내가 북마크한 사진만 */
+    /** 내가 북마크한 사진만 */
     override fun getBookmarkedPhotos(): Flow<List<Photo>> = callbackFlow {
-        val uid = firebaseAuth.currentUser?.uid ?: return@callbackFlow
+        val uid = firebaseAuth.currentUser?.uid
+        if (uid == null) {
+            trySend(emptyList())  // 로그인 전에도 로딩 종료되게 빈 리스트 방출
+            close()
+            return@callbackFlow
+        }
         val listener = firestore.collection("photos")
             .whereArrayContains("bookmarkedBy", uid)
-            .addSnapshotListener { snapshot, _ ->
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    close(error) // Flow를 실패 종료 → ViewModel의 catch로 떨어짐 → isLoading=false로 내려감
+                    return@addSnapshotListener
+                }
                 val photos = snapshot?.documents?.mapNotNull { it.toPhoto() } ?: emptyList()
                 trySend(photos)
             }
         awaitClose { listener.remove() }
     }
 
-    /** 🔹 북마크 토글 */
+    /** 북마크 토글 */
     override suspend fun toggleBookmark(photoId: String) {
         val uid = firebaseAuth.currentUser?.uid ?: return
         val docRef = firestore.collection("photos").document(photoId)

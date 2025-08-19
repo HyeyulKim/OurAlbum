@@ -8,5 +8,7 @@ import javax.inject.Inject
 class GetPhotosUseCase @Inject constructor(
     private val repository: PhotoRepository
 ) {
-    operator fun invoke(): Flow<List<Photo>> = repository.getAllPhotos()
+    operator fun invoke(): Flow<List<Photo>> {
+        return repository.getAllPhotos()
+    }
 }
