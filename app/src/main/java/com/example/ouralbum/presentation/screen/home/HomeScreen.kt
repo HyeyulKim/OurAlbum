@@ -16,7 +16,10 @@ import com.example.ouralbum.presentation.component.EmptyView
 import com.example.ouralbum.presentation.component.LoginRequiredView
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(
+    onOpenDetail: (String) -> Unit,
+    viewModel: HomeViewModel = hiltViewModel()
+) {
     val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -55,7 +58,8 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                         items(uiState.photos, key = { it.id }) { photo ->
                             PhotoCard(
                                 photo = photo,
-                                onBookmarkClick = { viewModel.onBookmarkClick(photo.id) }
+                                onBookmarkClick = { viewModel.onBookmarkClick(photo.id) },
+                                onClick = { onOpenDetail(photo.id) }
                             )
                         }
                     }

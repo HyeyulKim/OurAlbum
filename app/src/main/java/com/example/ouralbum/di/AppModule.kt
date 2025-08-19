@@ -51,8 +51,9 @@ object AppModule {
     @Singleton
     fun providePhotoRepository(
         firestore: FirebaseFirestore,
-        firebaseAuth: FirebaseAuth
-    ): PhotoRepository = PhotoRepositoryImpl(firestore, firebaseAuth)
+        firebaseAuth: FirebaseAuth,
+        storage: FirebaseStorage
+    ): PhotoRepository = PhotoRepositoryImpl(firestore, firebaseAuth, storage)
 
     // 전체 사진
     @Provides

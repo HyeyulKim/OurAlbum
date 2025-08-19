@@ -21,7 +21,10 @@ import com.example.ouralbum.presentation.component.PhotoCard
 import com.example.ouralbum.ui.util.Dimension
 
 @Composable
-fun BookmarkScreen(viewModel: BookmarkViewModel = hiltViewModel()) {
+fun BookmarkScreen(
+    onOpenDetail: (String) -> Unit,
+    viewModel: BookmarkViewModel = hiltViewModel()
+) {
     val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -66,7 +69,8 @@ fun BookmarkScreen(viewModel: BookmarkViewModel = hiltViewModel()) {
                         items(uiState.bookmarkedPhotos, key = { it.id }) { photo ->
                             PhotoCard(
                                 photo = photo,
-                                onBookmarkClick = { viewModel.onBookmarkClick(photo.id) }
+                                onBookmarkClick = { viewModel.onBookmarkClick(photo.id) },
+                                onClick = { onOpenDetail(photo.id) }
                             )
                         }
                     }

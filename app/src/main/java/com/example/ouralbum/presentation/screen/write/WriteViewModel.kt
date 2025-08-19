@@ -46,6 +46,7 @@ class WriteViewModel @Inject constructor(
 
         val title = _uiState.value.title
         val imageUri = _uiState.value.imageUri
+        val content = _uiState.value.content
 
         if (imageUri == null || title.isBlank()) {
             _uploadState.value = UploadState.Failure("제목 또는 이미지가 없습니다.")
@@ -58,6 +59,7 @@ class WriteViewModel @Inject constructor(
             photoUploader.uploadPhoto(
                 imageUri = imageUri,
                 title = title,
+                content = content,
                 onSuccess = {
                     _uploadState.value = UploadState.Success
                 },

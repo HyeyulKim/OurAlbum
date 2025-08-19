@@ -21,6 +21,7 @@ import com.example.ouralbum.presentation.component.PhotoCard
 
 @Composable
 fun GalleryScreen(
+    onOpenDetail: (String) -> Unit,
     viewModel: GalleryViewModel = hiltViewModel(),
 ) {
     val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
@@ -59,7 +60,8 @@ fun GalleryScreen(
                             items(uiState.photos, key = { it.id }) { photo ->
                                 PhotoCard(
                                     photo = photo,
-                                    onBookmarkClick = { viewModel.onBookmarkClick(photo.id) }
+                                    onBookmarkClick = { viewModel.onBookmarkClick(photo.id) },
+                                    onClick = { onOpenDetail(photo.id) }
                                 )
                             }
                         }

@@ -20,6 +20,7 @@ class PhotoUploader @Inject constructor(
     suspend fun uploadPhoto(
         imageUri: Uri,
         title: String,
+        content: String,
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
@@ -43,6 +44,7 @@ class PhotoUploader @Inject constructor(
             // 3. Firestore에 사진 정보 저장
             val photoData = hashMapOf(
                 "title" to title,
+                "content" to content,
                 "date" to date,
                 "imageUrl" to imageUrl,
                 "userId" to userId,
