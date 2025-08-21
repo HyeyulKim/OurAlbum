@@ -108,7 +108,8 @@ fun OurAlbumNavHost(
             arguments = listOf(navArgument("photoId") { type = NavType.StringType })
         ) {
             PhotoEditScreen(
-                onDone = { navController.popBackStack() } // 저장 후 상세로 자동 복귀
+                onDone = { navController.popBackStack() },
+                onBack = { navController.popBackStack() }
             )
         }
     }

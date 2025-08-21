@@ -54,8 +54,7 @@ fun GalleryScreen(
                         EmptyView("업로드된 게시물이 없습니다.")
                     } else {
                         LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(vertical = 8.dp)
+                            modifier = Modifier.fillMaxSize()
                         ) {
                             items(uiState.photos, key = { it.id }) { photo ->
                                 PhotoCard(

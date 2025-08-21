@@ -13,6 +13,7 @@ import com.example.ouralbum.presentation.component.ErrorView
 @Composable
 fun PhotoEditScreen(
     onDone: () -> Unit,
+    onBack: () -> Unit,
     viewModel: PhotoEditViewModel = hiltViewModel()
 ) {
     val ui by viewModel.uiState.collectAsStateWithLifecycle()
@@ -21,7 +22,7 @@ fun PhotoEditScreen(
         if (ui.done) onDone()
     }
 
-    Scaffold(topBar = { AppTopBar(title = "게시물 수정") }) { padding ->
+    Scaffold(topBar = { AppTopBar(title = "게시물 수정", onBack = onBack) }) { padding ->
         when {
             ui.isLoading -> Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
                 CircularProgressIndicator()
