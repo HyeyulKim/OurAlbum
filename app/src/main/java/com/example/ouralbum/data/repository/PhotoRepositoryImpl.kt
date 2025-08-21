@@ -7,6 +7,7 @@ import com.example.ouralbum.domain.model.PhotoDetail
 import com.example.ouralbum.domain.repository.PhotoRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -22,6 +23,7 @@ class PhotoRepositoryImpl @Inject constructor(
 
     override fun getAllPhotos(): Flow<List<Photo>> = callbackFlow {
         val listener = firestore.collection("photos")
+            .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) { close(error); return@addSnapshotListener }
                 val photos = snapshot?.documents?.mapNotNull { it.toPhoto() } ?: emptyList()
@@ -35,6 +37,7 @@ class PhotoRepositoryImpl @Inject constructor(
         if (uid == null) { trySend(emptyList()); close(); return@callbackFlow }
         val listener = firestore.collection("photos")
             .whereEqualTo("userId", uid)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) { close(error); return@addSnapshotListener }
                 val photos = snapshot?.documents?.mapNotNull { it.toPhoto() } ?: emptyList()
@@ -48,6 +51,7 @@ class PhotoRepositoryImpl @Inject constructor(
         if (uid == null) { trySend(emptyList()); close(); return@callbackFlow }
         val listener = firestore.collection("photos")
             .whereArrayContains("bookmarkedBy", uid)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) { close(error); return@addSnapshotListener }
                 val photos = snapshot?.documents?.mapNotNull { it.toPhoto() } ?: emptyList()
