@@ -9,14 +9,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.ouralbum.domain.model.Photo
-import com.example.ouralbum.ui.theme.bodyLargeBold
 import com.example.ouralbum.ui.util.Dimension
 
 @Composable
@@ -24,9 +21,12 @@ fun PhotoCard(
     photo: Photo,
     onBookmarkClick: () -> Unit,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    imageModifier: Modifier = Modifier.fillMaxWidth(),
+    imageContentScale: ContentScale = ContentScale.FillWidth
 ) {
     val fontSizeTitle = Dimension.scaledFont(0.02f)
+    val fontSizeContent = Dimension.scaledFont(0.018f)
     val fontSizeDate = Dimension.scaledFont(0.017f)
     val iconSize = Dimension.scaledWidth(0.06f)
     val paddingHorizontal = Dimension.paddingSmall()
@@ -71,8 +71,18 @@ fun PhotoCard(
         AsyncImage(
             model = photo.imageUrl,
             contentDescription = "사진: ${photo.title}",
-            contentScale = ContentScale.FillWidth,
-            modifier = Modifier.fillMaxWidth()
+            contentScale = imageContentScale,
+            modifier = imageModifier
+        )
+
+        Text(
+            text = if (photo.content.isBlank()) "내용 없음" else photo.content,
+            style = MaterialTheme.typography.bodyLarge.copy(fontSize = fontSizeContent),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = paddingHorizontal, vertical = 4.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }

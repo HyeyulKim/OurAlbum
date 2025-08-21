@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -70,7 +71,11 @@ fun BookmarkScreen(
                             PhotoCard(
                                 photo = photo,
                                 onBookmarkClick = { viewModel.onBookmarkClick(photo.id) },
-                                onClick = { onOpenDetail(photo.id) }
+                                onClick = { onOpenDetail(photo.id) },
+                                imageModifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(1f),
+                                imageContentScale = ContentScale.Crop
                             )
                         }
                     }

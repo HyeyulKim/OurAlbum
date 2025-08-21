@@ -10,5 +10,6 @@ data class Photo(
     val content: String = "",
     val date: String = "",
     val imageUrl: String = "",
-    val isBookmarked: Boolean = false
+    val isBookmarked: Boolean = false,
+    val createdAt: Long
 )

@@ -4,6 +4,7 @@ import android.net.Uri
 import android.util.Log
 import com.example.ouralbum.domain.model.Photo
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.tasks.await
@@ -31,8 +32,11 @@ class PhotoUploader @Inject constructor(
             val userId = FirebaseAuth.getInstance().currentUser?.uid
                 ?: throw IllegalStateException("로그인 필요")
 
-            val date = getCurrentDate()
-            val photoId = firestore.collection("photos").document().id
+            // Firestore 문서 ID 미리 생성
+            val photoDocRef = firestore.collection("photos").document()
+            val photoId = photoDocRef.id
+
+            // Storage 경로: photos/{userId}/{photoId}.jpg
             val storageRef = storage.reference.child("photos/$userId/$photoId.jpg")
 
             // 1. Storage에 업로드
@@ -45,13 +49,14 @@ class PhotoUploader @Inject constructor(
             val photoData = hashMapOf(
                 "title" to title,
                 "content" to content,
-                "date" to date,
+                "date" to getCurrentDate(),
                 "imageUrl" to imageUrl,
                 "userId" to userId,
-                "bookmarkedBy" to emptyList<String>()
+                "bookmarkedBy" to emptyList<String>(),
+                "createdAt" to FieldValue.serverTimestamp()
             )
 
-            firestore.collection("photos").document(photoId).set(photoData).await()
+            photoDocRef.set(photoData).await()
             onSuccess()
         } catch (e: Exception) {
             Log.e("UploadError", "Firebase Storage 업로드 실패", e)

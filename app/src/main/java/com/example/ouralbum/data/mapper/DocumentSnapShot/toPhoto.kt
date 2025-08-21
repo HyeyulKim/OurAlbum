@@ -11,13 +11,14 @@ import com.google.firebase.firestore.DocumentSnapshot
 fun DocumentSnapshot.toPhoto(): Photo? = runCatching {
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
     val bookmarkedBy = (get("bookmarkedBy") as? List<*>)?.filterIsInstance<String>().orEmpty()
-
+    val ts = getTimestamp("createdAt")
     Photo(
         id = id,
         title = getString("title").orEmpty(),
         content = getString("content").orEmpty(),
         date = getString("date").orEmpty(),
         imageUrl = getString("imageUrl").orEmpty(),
-        isBookmarked = currentUserId != null && currentUserId in bookmarkedBy
+        isBookmarked = currentUserId != null && currentUserId in bookmarkedBy,
+        createdAt = ts?.toDate()?.time ?: 0L
     )
 }.getOrNull()
