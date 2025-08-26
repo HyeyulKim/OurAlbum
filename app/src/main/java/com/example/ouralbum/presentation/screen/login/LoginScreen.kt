@@ -1,16 +1,25 @@
 package com.example.ouralbum.presentation.screen.login
 
-import android.app.Activity
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -19,7 +28,6 @@ import com.google.android.gms.common.api.ApiException
 import androidx.navigation.NavController
 import com.example.ouralbum.R
 import com.example.ouralbum.presentation.navigation.NavigationItem
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import kotlinx.coroutines.delay
 
 @Composable
@@ -30,6 +38,9 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     val loginState by viewModel.loginState.collectAsState()
+
+    val enabled = loginState !is LoginViewModel.LoginState.Loading
+    val interaction = remember { MutableInteractionSource() }
 
     val gso = remember {
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -80,27 +91,65 @@ fun LoginScreen(
         }
     }
 
+
     // UI
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            //.background(Color(0xFF248350))
     ) {
-        Button(onClick = {
-            launcher.launch(googleSignInClient.signInIntent)
-        }) {
-            Text("Google로 로그인")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         when (loginState) {
-            is LoginViewModel.LoginState.Loading -> Text("로그인 중...")
-            is LoginViewModel.LoginState.Failure -> Text(
-                text = (loginState as LoginViewModel.LoginState.Failure).message ?: "로그인 실패",
-                color = MaterialTheme.colorScheme.error
-            )
+            is LoginViewModel.LoginState.Loading -> {
+                LaunchedEffect(loginState) {
+                    Toast.makeText(context, "로그인 중...", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            is LoginViewModel.LoginState.Failure -> {
+                val msg = (loginState as LoginViewModel.LoginState.Failure).message ?: "로그인 실패"
+                LaunchedEffect(msg) {
+                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                }
+            }
+
             else -> {}
         }
+
+
+        // 상단 로고
+        Image(
+            painter = painterResource(id = R.drawable.login_logo),
+            contentDescription = "Login Logo",
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(top = 200.dp)
+                .size(240.dp)
+        )
+
+        Text(
+            text = "우리의 앨범에 로그인해서\n우리의 추억을 기록하세요",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.align(Alignment.Center)
+        )
+
+        Image(
+            painter = painterResource(id = R.drawable.google_btn_ctn),
+            contentDescription = "Continue with Google",
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
+                .padding(bottom = 150.dp)
+                .fillMaxWidth()
+                .height(42.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .clickable(
+                    enabled = enabled,
+                    interactionSource = interaction,
+                    indication = rememberRipple(bounded = true, radius = 24.dp)
+                ) { launcher.launch(googleSignInClient.signInIntent) }
+                .alpha(if (enabled) 1f else 0.6f)
+        )
+
     }
 }
