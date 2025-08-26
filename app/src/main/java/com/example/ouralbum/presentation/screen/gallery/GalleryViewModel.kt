@@ -66,7 +66,6 @@ class GalleryViewModel @Inject constructor(
     fun onBookmarkClick(photoId: String) {
         viewModelScope.launch {
             toggleBookmarkUseCase(photoId)
-            reload() // 북마크 후 재로딩
         }
     }
 }

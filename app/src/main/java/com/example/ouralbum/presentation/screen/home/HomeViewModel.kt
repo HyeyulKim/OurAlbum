@@ -82,7 +82,6 @@ class HomeViewModel @Inject constructor(
     fun onBookmarkClick(photoId: String) {
         viewModelScope.launch {
             toggleBookmarkUseCase(photoId)
-            reload() // 북마크 후 새로고침
         }
     }
 }
