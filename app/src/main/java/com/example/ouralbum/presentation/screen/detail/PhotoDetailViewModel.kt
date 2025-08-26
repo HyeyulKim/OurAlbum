@@ -5,7 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ouralbum.domain.usecase.DeletePhotoUseCase
 import com.example.ouralbum.domain.usecase.GetPhotoDetailUseCase
+import com.example.ouralbum.domain.usecase.ToggleBookmarkUseCase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.AggregateSource
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.Query
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +24,8 @@ import javax.inject.Inject
 class PhotoDetailViewModel @Inject constructor(
     private val getPhotoDetailUseCase: GetPhotoDetailUseCase,
     private val deletePhotoUseCase: DeletePhotoUseCase,
+    private val toggleBookmarkUseCase: ToggleBookmarkUseCase,
+    private val firestore: FirebaseFirestore,
     private val auth: FirebaseAuth,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -26,7 +34,13 @@ class PhotoDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(PhotoDetailUiState())
     val uiState: StateFlow<PhotoDetailUiState> = _uiState
 
+    private val _commentUiState = MutableStateFlow(CommentUiState())
+    val commentUiState: StateFlow<CommentUiState> = _commentUiState
+
+    private var commentListener: ListenerRegistration? = null
+
     private var subJob: Job? = null
+    val myUid: String? get() = auth.currentUser?.uid
 
     init { subscribe() }
 
@@ -46,8 +60,21 @@ class PhotoDetailViewModel @Inject constructor(
                         error = null
                     )
                 }
+                if (detail != null) {
+                    prefetchCommentCount(detail.id)
+                }
             }
         }
+    }
+
+    private fun prefetchCommentCount(photoId: String) {
+        firestore.collection("photos").document(photoId)
+            .collection("comments")
+            .count()
+            .get(AggregateSource.SERVER)
+            .addOnSuccessListener { agg ->
+                _commentUiState.update { it.copy(count = agg.count.toInt()) }
+            }
     }
 
     fun delete(onDeleted: () -> Unit) {
@@ -59,5 +86,108 @@ class PhotoDetailViewModel @Inject constructor(
                 _uiState.update { it.copy(error = e.message ?: "삭제 실패") }
             }
         }
+    }
+
+    fun toggleComments(photoId: String) {
+        val nowOpen = !_commentUiState.value.opened
+        if (nowOpen) {
+            // 열기
+            _commentUiState.update { it.copy(opened = true, loading = true, photoId = photoId) }
+            attachComments(photoId)
+        } else {
+            // 닫기
+            detachComments()
+            _commentUiState.update { it.copy(opened = false, loading = false, input = "") }
+        }
+    }
+
+    private fun attachComments(photoId: String) {
+        commentListener?.remove()
+        commentListener = firestore.collection("photos").document(photoId)
+            .collection("comments")
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .addSnapshotListener { snap, e ->
+                if (e != null) {
+                    _commentUiState.update { it.copy(loading = false) }
+                    return@addSnapshotListener
+                }
+                val list = snap?.documents?.map { d ->
+                    CommentItem(
+                        id = d.id,
+                        text = d.getString("text") ?: "",
+                        authorName = d.getString("authorName"),
+                        userId = d.getString("userId") ?: "",
+                        createdAt = d.getTimestamp("createdAt")
+                    )
+                }.orEmpty()
+                _commentUiState.update { it.copy(loading = false, comments = list, count = list.size) }
+            }
+    }
+
+    private fun detachComments() {
+        commentListener?.remove()
+        commentListener = null
+    }
+
+    fun onCommentInputChange(s: String) {
+        _commentUiState.update { it.copy(input = s) }
+    }
+
+    fun sendComment() {
+        val state = _commentUiState.value
+        val uid = auth.currentUser?.uid ?: return
+        val pid = state.photoId ?: return
+        val text = state.input.trim()
+        if (text.isBlank() || state.sending) return
+
+        _commentUiState.update { it.copy(sending = true) }
+
+        val data = hashMapOf(
+            "text" to text,
+            "userId" to uid,
+            "authorName" to (auth.currentUser?.displayName ?: ""),
+            "createdAt" to FieldValue.serverTimestamp()
+        )
+
+        firestore.collection("photos").document(pid)
+            .collection("comments")
+            .add(data)
+            .addOnSuccessListener {
+                _commentUiState.update { it.copy(sending = false, input = "") }
+            }
+            .addOnFailureListener {
+                _commentUiState.update { it.copy(sending = false) }
+            }
+    }
+
+    fun updateComment(commentId: String, newText: String) {
+        val pid = _commentUiState.value.photoId ?: return
+        firestore.collection("photos").document(pid)
+            .collection("comments").document(commentId)
+            .update(mapOf("text" to newText))
+            .addOnFailureListener { e ->
+                android.util.Log.e("UpdateComment", "Failed to update comment", e)
+                _uiState.update { it.copy(error = e.message ?: "댓글 수정 실패") }
+            }
+    }
+
+    fun deleteComment(commentId: String) {
+        val pid = _commentUiState.value.photoId ?: return
+        firestore.collection("photos").document(pid)
+            .collection("comments").document(commentId)
+            .delete()
+            .addOnFailureListener { e ->
+                android.util.Log.e("DeleteComment", "Failed to delete comment", e)
+                _uiState.update { it.copy(error = e.message ?: "댓글 삭제 실패") }
+            }
+    }
+
+    fun onBookmarkClick(photoId: String) {
+        viewModelScope.launch { toggleBookmarkUseCase(photoId) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        detachComments()
     }
 }
