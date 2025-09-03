@@ -70,6 +70,7 @@ fun BookmarkScreen(
                         items(uiState.bookmarkedPhotos, key = { it.id }) { photo ->
                             PhotoCard(
                                 photo = photo,
+                                bookmarked = true,
                                 onBookmarkClick = { viewModel.onBookmarkClick(photo.id) },
                                 onClick = { onOpenDetail(photo.id) },
                                 imageModifier = Modifier

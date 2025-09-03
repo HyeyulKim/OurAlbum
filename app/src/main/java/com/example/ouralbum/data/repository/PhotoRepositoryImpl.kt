@@ -5,9 +5,13 @@ import com.example.ouralbum.data.mapper.toPhotoDetail
 import com.example.ouralbum.domain.model.Photo
 import com.example.ouralbum.domain.model.PhotoDetail
 import com.example.ouralbum.domain.repository.PhotoRepository
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldPath
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -21,8 +25,12 @@ class PhotoRepositoryImpl @Inject constructor(
     private val storage: FirebaseStorage
 ) : PhotoRepository {
 
+    private fun photosRef() = firestore.collection("photos")
+    private fun userBookmarksRef(uid: String) =
+        firestore.collection("users").document(uid).collection("bookmarks")
+
     override fun getAllPhotos(): Flow<List<Photo>> = callbackFlow {
-        val listener = firestore.collection("photos")
+        val listener = photosRef()
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) { close(error); return@addSnapshotListener }
@@ -35,37 +43,63 @@ class PhotoRepositoryImpl @Inject constructor(
     override fun getPhotosByCurrentUser(): Flow<List<Photo>> = callbackFlow {
         val uid = firebaseAuth.currentUser?.uid
         if (uid == null) { trySend(emptyList()); close(); return@callbackFlow }
-        val listener = firestore.collection("photos")
+
+        val listener = photosRef()
             .whereEqualTo("userId", uid)
             .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) { close(error); return@addSnapshotListener }
                 val photos = snapshot?.documents?.mapNotNull { it.toPhoto() } ?: emptyList()
-                trySend(photos)
+                trySend(photos).isSuccess
             }
         awaitClose { listener.remove() }
     }
 
+    // users/{uid}/bookmarks 문서(id=photoId) -> photos 컬렉션에서 배치 조회(chunks)
     override fun getBookmarkedPhotos(): Flow<List<Photo>> = callbackFlow {
         val uid = firebaseAuth.currentUser?.uid
         if (uid == null) { trySend(emptyList()); close(); return@callbackFlow }
-        val listener = firestore.collection("photos")
-            .whereArrayContains("bookmarkedBy", uid)
+
+        val listener = userBookmarksRef(uid)
             .orderBy("createdAt", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshot, error ->
+            .addSnapshotListener { bookmarksSnap, error ->
                 if (error != null) { close(error); return@addSnapshotListener }
-                val photos = snapshot?.documents?.mapNotNull { it.toPhoto() } ?: emptyList()
-                trySend(photos)
+
+                val ids = bookmarksSnap?.documents?.map { it.id } ?: emptyList()
+                if (ids.isEmpty()) {
+                    trySend(emptyList()).isSuccess
+                    return@addSnapshotListener
+                }
+
+                // whereIn 제한(10~30) 대응: 안전하게 10개로 chunking
+                val chunks = ids.chunked(10)
+                val tasks = chunks.map { chunk ->
+                    photosRef()
+                        .whereIn(FieldPath.documentId(), chunk)
+                        .get()
+                }
+
+                Tasks.whenAllSuccess<QuerySnapshot>(tasks)
+                    .addOnSuccessListener { results ->
+                        val merged = results
+                            .flatMap { it.documents }
+                            .mapNotNull { it.toPhoto() }
+                            // createdAt 기준 정렬 필요 시 유지
+                            .sortedBy { it.createdAt }
+                        trySend(merged).isSuccess
+                    }
+                    .addOnFailureListener { t -> close(t) }
             }
+
         awaitClose { listener.remove() }
     }
 
     // 상세
     override fun getPhotoDetailById(photoId: String): Flow<PhotoDetail?> = callbackFlow {
-        val docRef = firestore.collection("photos").document(photoId)
+        val docRef = photosRef().document(photoId)
         val listener = docRef.addSnapshotListener { snapshot, error ->
             if (error != null) { close(error); return@addSnapshotListener }
-            trySend(snapshot?.toPhotoDetail())
+            trySend(snapshot?.toPhotoDetail()).isSuccess
         }
         awaitClose { listener.remove() }
     }
@@ -73,56 +107,69 @@ class PhotoRepositoryImpl @Inject constructor(
     // 수정 (작성자만)
     override suspend fun updatePhoto(photoId: String, title: String, content: String) {
         val uid = firebaseAuth.currentUser?.uid ?: error("로그인 필요")
-        val docRef = firestore.collection("photos").document(photoId)
+        val docRef = photosRef().document(photoId)
         val ownerId = docRef.get().await().getString("userId") ?: ""
         require(ownerId == uid) { "본인만 수정할 수 있습니다." }
-        docRef.update(mapOf("title" to title, "content" to content)).await()
+
+        docRef.update(
+            mapOf(
+                "title" to title,
+                "content" to content,
+                "updatedAt" to FieldValue.serverTimestamp()
+            )
+        ).await()
     }
 
     // 삭제 (Storage 이미지 → Firestore 문서 순으로)
     override suspend fun deletePhoto(photoId: String) {
         val uid = firebaseAuth.currentUser?.uid ?: error("로그인 필요")
-        val docRef = firestore.collection("photos").document(photoId)
+        val docRef = photosRef().document(photoId)
         val snap = docRef.get().await()
         val ownerId = snap.getString("userId") ?: ""
         require(ownerId == uid) { "본인만 삭제할 수 있습니다." }
 
         val storagePath = snap.getString("storagePath")
-        val imageUrl = snap.getString("imageUrl") // 없으면 storagePath로만 처리
+        val imageUrl = snap.getString("imageUrl")
 
-        // 1) Storage 삭제
+        // 1) Storage 삭제 (경로 없으면 과거 규칙 추론)
         try {
             when {
-                !storagePath.isNullOrBlank() -> {
+                !storagePath.isNullOrBlank() ->
                     storage.reference.child(storagePath).delete().await()
-                }
-                !imageUrl.isNullOrBlank() -> {
-                    // URL로 바로 참조 얻어 삭제
+                !imageUrl.isNullOrBlank() ->
                     storage.getReferenceFromUrl(imageUrl).delete().await()
-                }
                 else -> {
-                    // 경로가 전혀 없으면, 과거 업로더 규칙대로 추론 시도
-                    // "photos/{userId}/{photoId}.jpg"
                     val guess = "photos/$ownerId/$photoId.jpg"
                     storage.reference.child(guess).delete().await()
                 }
             }
         } catch (_: Exception) {
-            // 이미지가 이미 없거나 경로가 바뀐 경우도 있으니 문서 삭제는 진행
+            // 파일 없을 수도 있으니 문서 삭제는 진행
         }
 
         // 2) Firestore 문서 삭제
         docRef.delete().await()
     }
 
+    // photos 문서 수정 금지. users/{uid}/bookmarks/{photoId}에 생성/삭제만 수행
     override suspend fun toggleBookmark(photoId: String) {
-        val uid = firebaseAuth.currentUser?.uid ?: return
-        val docRef = firestore.collection("photos").document(photoId)
+        require(photoId.isNotBlank()) { "invalid photoId" }
+        val uid = firebaseAuth.currentUser?.uid ?: error("로그인 필요")
+
+        val bookmarkDoc = userBookmarksRef(uid).document(photoId)
         firestore.runTransaction { tx ->
-            val snap = tx.get(docRef)
-            val bookmarkedBy = (snap.get("bookmarkedBy") as? List<*>)?.filterIsInstance<String>() ?: emptyList()
-            val updated = if (uid in bookmarkedBy) bookmarkedBy - uid else bookmarkedBy + uid
-            tx.update(docRef, "bookmarkedBy", updated)
+            val snap = tx.get(bookmarkDoc)
+            if (snap.exists()) {
+                tx.delete(bookmarkDoc)
+            } else {
+                tx.set(
+                    bookmarkDoc,
+                    mapOf(
+                        "photoId" to photoId,
+                        "createdAt" to FieldValue.serverTimestamp()
+                    )
+                )
+            }
         }.await()
     }
 }
