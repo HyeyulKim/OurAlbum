@@ -26,6 +26,8 @@ fun GalleryScreen(
 ) {
     val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // 내가 북마크한 photoId 집합 구독
+    val bookmarkedIds by viewModel.bookmarkedIds.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = { AppTopBar(title = "My Album") }
@@ -59,6 +61,7 @@ fun GalleryScreen(
                             items(uiState.photos, key = { it.id }) { photo ->
                                 PhotoCard(
                                     photo = photo,
+                                    bookmarked = bookmarkedIds.contains(photo.id),
                                     onBookmarkClick = { viewModel.onBookmarkClick(photo.id) },
                                     onClick = { onOpenDetail(photo.id) }
                                 )

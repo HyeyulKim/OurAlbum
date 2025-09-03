@@ -29,7 +29,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ExperimentalMaterial3Api
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PhotoDetailScreen(
     onBack: () -> Unit,
@@ -38,6 +38,9 @@ fun PhotoDetailScreen(
 ) {
     val ui by viewModel.uiState.collectAsStateWithLifecycle()
     val commentUi by viewModel.commentUiState.collectAsStateWithLifecycle()
+
+    val isBookmarked by viewModel.isBookmarked.collectAsStateWithLifecycle()
+
     var showDeleteDialog by remember { mutableStateOf(false) }
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -46,8 +49,6 @@ fun PhotoDetailScreen(
     val isDark = isSystemInDarkTheme()
     val contentColor = if (isDark) Color.White else Color.Black
     val containerColor = if (isDark) Color.Black else Color.White
-
-    val isBookmarked = ui.photo?.isBookmarked == true
 
     LaunchedEffect(commentUi.opened) {
         if (commentUi.opened) {

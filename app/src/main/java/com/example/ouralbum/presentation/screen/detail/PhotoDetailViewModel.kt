@@ -42,6 +42,16 @@ class PhotoDetailViewModel @Inject constructor(
     private var subJob: Job? = null
     val myUid: String? get() = auth.currentUser?.uid
 
+    // 북마크 상태용: UI에서 아이콘/버튼 상태
+    private val _isBookmarked = MutableStateFlow(false)
+    val isBookmarked: StateFlow<Boolean> = _isBookmarked
+
+    // 북마크 문서 리스너
+    private var bookmarkListener: ListenerRegistration? = null
+
+    // 중복 클릭 방지
+    private var isTogglingBookmark = false
+
     init { subscribe() }
 
     fun reload() = subscribe()
@@ -62,6 +72,7 @@ class PhotoDetailViewModel @Inject constructor(
                 }
                 if (detail != null) {
                     prefetchCommentCount(detail.id)
+                    attachBookmarkState(detail.id) // 북마크 상태 구독 시작
                 }
             }
         }
@@ -182,12 +193,52 @@ class PhotoDetailViewModel @Inject constructor(
             }
     }
 
+    // 예외 처리 + 중복 클릭 방지 + 낙관적 UI 반영
     fun onBookmarkClick(photoId: String) {
-        viewModelScope.launch { toggleBookmarkUseCase(photoId) }
+        val uid = auth.currentUser?.uid ?: return
+        if (isTogglingBookmark) return
+        isTogglingBookmark = true
+
+        // 낙관적 토글: 즉시 반영 후 실패 시 롤백
+        val before = _isBookmarked.value
+        _isBookmarked.value = !before
+
+        viewModelScope.launch {
+            runCatching { toggleBookmarkUseCase(photoId) }
+                .onFailure { e ->
+                    // 롤백 & 에러 표기
+                    _isBookmarked.value = before
+                    _uiState.update { it.copy(error = e.message ?: "북마크 처리에 실패했습니다.") }
+                }
+            isTogglingBookmark = false
+        }
+    }
+
+    // 북마크 상태 구독: users/{uid}/bookmarks/{photoId} 존재 여부
+    private fun attachBookmarkState(photoId: String) {
+        bookmarkListener?.remove()
+        val uid = auth.currentUser?.uid ?: run {
+            _isBookmarked.value = false
+            return
+        }
+        bookmarkListener = firestore.collection("users")
+            .document(uid)
+            .collection("bookmarks")
+            .document(photoId)
+            .addSnapshotListener { snap, e ->
+                if (e != null) return@addSnapshotListener
+                _isBookmarked.value = (snap?.exists() == true)
+            }
+    }
+
+    private fun detachBookmark() {
+        bookmarkListener?.remove()
+        bookmarkListener = null
     }
 
     override fun onCleared() {
         super.onCleared()
         detachComments()
+        detachBookmark()
     }
 }

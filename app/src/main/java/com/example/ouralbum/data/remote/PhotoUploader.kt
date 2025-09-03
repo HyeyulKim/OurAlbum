@@ -52,7 +52,6 @@ class PhotoUploader @Inject constructor(
                 "date" to getCurrentDate(),
                 "imageUrl" to imageUrl,
                 "userId" to userId,
-                "bookmarkedBy" to emptyList<String>(),
                 "createdAt" to FieldValue.serverTimestamp()
             )
 

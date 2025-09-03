@@ -6,7 +6,6 @@ data class PhotoDetail(
     val content: String,
     val date: String,
     val imageUrl: String,
-    val isBookmarked: Boolean,
 
     // 상세 전용 필드
     val userId: String,          // 글 작성자 식별 (수정/삭제 버튼 노출 판단)

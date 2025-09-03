@@ -1,6 +1,7 @@
 package com.example.ouralbum.presentation.component
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
@@ -9,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -19,6 +21,7 @@ import com.example.ouralbum.ui.util.Dimension
 @Composable
 fun PhotoCard(
     photo: Photo,
+    bookmarked: Boolean,
     onBookmarkClick: () -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -31,6 +34,9 @@ fun PhotoCard(
     val iconSize = Dimension.scaledWidth(0.06f)
     val paddingHorizontal = Dimension.paddingSmall()
     val paddingVertical = Dimension.scaledHeight(0.01f)
+
+    val isDark = isSystemInDarkTheme()
+    val contentColor = if (isDark) Color.White else Color.Black
 
     Column(
         modifier = modifier
@@ -57,13 +63,16 @@ fun PhotoCard(
                 maxLines = 1
             )
 
-            IconButton(
-                onClick = onBookmarkClick,
+            // 아이콘은 외부의 bookmarked만 사용 (로컬 상태 X)
+            IconToggleButton(
+                checked = bookmarked,
+                onCheckedChange = { onBookmarkClick() },
                 modifier = Modifier.size(iconSize)
             ) {
                 Icon(
-                    imageVector = if (photo.isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-                    contentDescription = "북마크"
+                    imageVector = if (bookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                    contentDescription = if (bookmarked) "북마크됨" else "북마크",
+                    tint = contentColor
                 )
             }
         }

@@ -22,6 +22,7 @@ fun HomeScreen(
 ) {
     val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val bookmarkedIds by viewModel.bookmarkedIds.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = { AppTopBar(title = "Our Album") }
@@ -58,6 +59,7 @@ fun HomeScreen(
                         items(uiState.photos, key = { it.id }) { photo ->
                             PhotoCard(
                                 photo = photo,
+                                bookmarked = bookmarkedIds.contains(photo.id),
                                 onBookmarkClick = { viewModel.onBookmarkClick(photo.id) },
                                 onClick = { onOpenDetail(photo.id) }
                             )
