@@ -14,7 +14,7 @@ fun DocumentSnapshot.toPhoto(): Photo? = runCatching {
         date = getString("date").orEmpty(),
         imageUrl = getString("imageUrl").orEmpty(),
         createdAt = ts.toDate().time,
-        authorName = getString("authorName"),            // ★ 닉네임
-        authorPhotoUrl = getString("authorPhotoUrl")     // ★ 프로필
+        authorName = getString("authorName"),            // 닉네임
+        authorPhotoUrl = getString("authorPhotoUrl")     // 프로필
     )
 }.getOrNull()

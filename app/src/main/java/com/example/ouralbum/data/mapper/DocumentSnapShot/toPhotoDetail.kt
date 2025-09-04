@@ -13,6 +13,8 @@ fun DocumentSnapshot.toPhotoDetail(): PhotoDetail? = runCatching {
         date = getString("date") ?: "",
         imageUrl = getString("imageUrl") ?: "",
         userId = getString("userId") ?: "",
-        storagePath = getString("storagePath") // 선택 저장 필드(없어도 동작)
+        storagePath = getString("storagePath"), // 선택 저장 필드(없어도 동작)
+        authorName = getString("authorName"), // 닉네임
+        authorPhotoUrl = getString("authorPhotoUrl") // 프로필
     )
 }.getOrNull()

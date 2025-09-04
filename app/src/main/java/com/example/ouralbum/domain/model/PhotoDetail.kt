@@ -9,5 +9,9 @@ data class PhotoDetail(
 
     // 상세 전용 필드
     val userId: String,          // 글 작성자 식별 (수정/삭제 버튼 노출 판단)
-    val storagePath: String? = null // 선택: 문서에 별도로 저장 시 사용, 없으면 imageUrl로 Storage 참조 삭제
+    val storagePath: String? = null, // 선택: 문서에 별도로 저장 시 사용, 없으면 imageUrl로 Storage 참조 삭제
+
+    // 작성자 메타
+    val authorName: String? = null,          // 구글 닉네임
+    val authorPhotoUrl: String? = null       // 구글 프로필 이미지
 )

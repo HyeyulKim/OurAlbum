@@ -76,7 +76,8 @@ fun BookmarkScreen(
                                 imageModifier = Modifier
                                     .fillMaxWidth()
                                     .aspectRatio(1f),
-                                imageContentScale = ContentScale.Crop
+                                imageContentScale = ContentScale.Crop,
+                                showDate = false
                             )
                         }
                     }
