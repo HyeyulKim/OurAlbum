@@ -29,6 +29,9 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.draw.clip
+import com.example.ouralbum.domain.model.Photo
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PhotoDetailScreen(
@@ -112,6 +115,53 @@ fun PhotoDetailScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize()
                     ) {
+                        // 작성자 헤더(프로필 + 닉네임)
+                        item {
+                            val avatarSize = 40.dp
+                            val avatarBg = MaterialTheme.colorScheme.surfaceVariant
+                            val isDark = isSystemInDarkTheme()
+                            val contentColor = if (isDark) Color.White else Color.Black
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // 원형 프로필
+                                val authorPhotoUrl = p.authorPhotoUrl
+                                if (!authorPhotoUrl.isNullOrBlank()) {
+                                    AsyncImage(
+                                        model = authorPhotoUrl,
+                                        contentDescription = "작성자 프로필",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .size(avatarSize)
+                                            .clip(shape = androidx.compose.foundation.shape.CircleShape)
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(avatarSize)
+                                            .clip(androidx.compose.foundation.shape.CircleShape)
+                                            .background(avatarBg)
+                                    )
+                                }
+
+                                Spacer(Modifier.width(10.dp))
+
+                                // 닉네임
+                                Column(modifier = Modifier.weight(1f)) {
+                                    val name = p.authorName.orEmpty()
+                                    Text(
+                                        text = if (name.isNotBlank()) name else "알 수 없음",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1
+                                    )
+                                }
+                            }
+                        }
                         // 사진
                         item {
                             AsyncImage(

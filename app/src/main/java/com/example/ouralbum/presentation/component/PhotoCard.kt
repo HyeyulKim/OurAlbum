@@ -31,7 +31,8 @@ fun PhotoCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     imageModifier: Modifier = Modifier.fillMaxWidth(),
-    imageContentScale: ContentScale = ContentScale.FillWidth
+    imageContentScale: ContentScale = ContentScale.FillWidth,
+    showDate: Boolean = true
 ) {
     val fontSizeTitle = Dimension.scaledFont(0.02f)
     val fontSizeContent = Dimension.scaledFont(0.018f)
@@ -111,12 +112,14 @@ fun PhotoCard(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = photo.date,
-                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = fontSizeDate),
-                    maxLines = 1
-                )
-                Spacer(Modifier.width(6.dp))
+                if (showDate) {
+                    Text(
+                        text = photo.date,
+                        style = MaterialTheme.typography.bodyLarge.copy(fontSize = fontSizeDate),
+                        maxLines = 1
+                    )
+                    Spacer(Modifier.width(6.dp))
+                }
                 IconToggleButton(
                     checked = bookmarked,
                     onCheckedChange = { onBookmarkClick() },
