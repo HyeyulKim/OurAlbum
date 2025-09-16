@@ -65,13 +65,21 @@ class PhotoRepositoryImpl @Inject constructor(
             .addSnapshotListener { bookmarksSnap, error ->
                 if (error != null) { close(error); return@addSnapshotListener }
 
-                val ids = bookmarksSnap?.documents?.map { it.id } ?: emptyList()
+                // 1) 북마크 id와 "북마크 시간" 맵 생성
+                val bookmarkTimes: Map<String, Long> =
+                    bookmarksSnap?.documents?.associate { d ->
+                        val photoId = d.id
+                        val t = d.getTimestamp("createdAt")?.toDate()?.time ?: 0L
+                        photoId to t
+                    } ?: emptyMap()
+
+                val ids = bookmarkTimes.keys.toList()
                 if (ids.isEmpty()) {
                     trySend(emptyList()).isSuccess
                     return@addSnapshotListener
                 }
 
-                // whereIn 제한(10~30) 대응: 안전하게 10개로 chunking
+                // 2) photos에서 chunk로 가져오기(whereIn 제한 방지)
                 val chunks = ids.chunked(10)
                 val tasks = chunks.map { chunk ->
                     photosRef()
@@ -81,11 +89,15 @@ class PhotoRepositoryImpl @Inject constructor(
 
                 Tasks.whenAllSuccess<QuerySnapshot>(tasks)
                     .addOnSuccessListener { results ->
+                        // 3) 병합 후 "북마크한 시점"으로 최신순 정렬
                         val merged = results
                             .flatMap { it.documents }
                             .mapNotNull { it.toPhoto() }
-                            // createdAt 기준 정렬 필요 시 유지
-                            .sortedBy { it.createdAt }
+                            .sortedByDescending { p -> bookmarkTimes[p.id] ?: 0L }
+                            // 동시간대 동률 시 업로드 시간으로 2차 정렬
+                            .sortedWith(compareByDescending<Photo> { bookmarkTimes[it.id] ?: 0L }
+                            .thenByDescending { it.createdAt })
+
                         trySend(merged).isSuccess
                     }
                     .addOnFailureListener { t -> close(t) }
@@ -93,6 +105,7 @@ class PhotoRepositoryImpl @Inject constructor(
 
         awaitClose { listener.remove() }
     }
+
 
     // 상세
     override fun getPhotoDetailById(photoId: String): Flow<PhotoDetail?> = callbackFlow {
